@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Buffet CRM — WhatsApp Web
 // @namespace    buffet.crm
-// @version      1.0.0
+// @version      1.1.0
 // @homepageURL  https://github.com/imwezz/crm
 // @updateURL    https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
 // @downloadURL  https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
