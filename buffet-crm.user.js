@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Buffet CRM — WhatsApp Web
 // @namespace    buffet.crm
-// @version      1.1.0
+// @version      1.0.1
 // @homepageURL  https://github.com/imwezz/crm
 // @updateURL    https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
 // @downloadURL  https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
@@ -127,7 +127,10 @@
       if (updates.status === 'ready') {
         updates.modal?.remove(); updates.modal = null;
         const next = updates.next; updates.next = null; next?.();
-      } else if (updates.status === 'required' || updates.modal?.isConnected) showUpdateDialog();
+      } else if (updates.modal?.isConnected) {
+        // A consulta inicial é silenciosa. Só atualiza um aviso aberto pelo usuário.
+        showUpdateDialog();
+      }
     });
     return updates.work;
   }
@@ -145,7 +148,7 @@
     };
     const required = updates.status === 'required'; const checking = updates.status === 'checking';
     const content = required
-      ? el('p', { text: `A versão ${updates.latest} está disponível. Atualize o CRM para continuar.` })
+      ? el('p', { text: 'Atualize pra continuar.' })
       : checking ? loadingBox('Verificando atualizações…')
         : statusBox('Não foi possível verificar as atualizações. Confira sua conexão e tente novamente.', 'error');
     const controls = el('div', { className: 'row wrap', style: 'justify-content:flex-end;margin-top:20px' },
@@ -153,11 +156,11 @@
     if (required) {
       controls.append(button('Atualizar', () => {
         try {
-          // O instalador oficial pede a confirmação; o CRM não instala código por conta própria.
-          const source = SCRIPT_DOWNLOAD_URL + '?crm-update=' + Date.now();
-          GM_openInTab('https://www.tampermonkey.net/script_installation.php#url=' + encodeURIComponent(source),
+          // O instalador espera uma URL HTTPS literal no fragmento. Codificá-la inteira
+          // faz a extensão interpretá-la como um caminho interno (ERR_FILE_NOT_FOUND).
+          GM_openInTab('https://www.tampermonkey.net/script_installation.php#url=' + SCRIPT_DOWNLOAD_URL,
             { active: true, insert: true, setParent: true });
-          content.textContent = 'Confirme a atualização na aba do Tampermonkey. Depois, recarregue o WhatsApp Web para usar a nova versão.';
+          content.textContent = 'Confirme a atualização na outra aba. Depois, recarregue o WhatsApp pra usar a nova versão.';
           if (!controls.querySelector('[data-crm-reload]')) controls.append(buttonReload());
         } catch { content.textContent = 'Não foi possível abrir o Tampermonkey. Clique em Atualizar para tentar novamente.'; }
       }, 'primary'));
