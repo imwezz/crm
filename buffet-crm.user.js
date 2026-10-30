@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Buffet CRM — WhatsApp Web
 // @namespace    buffet.crm
-// @version      1.0.1
+// @version      1.1.0
 // @homepageURL  https://github.com/imwezz/crm
 // @updateURL    https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
 // @downloadURL  https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
@@ -243,7 +243,7 @@
 
   function userProfile(user) {
     const meta = user.user_metadata || {};
-    const name = [meta.full_name, meta.name, meta.nome].find(value => typeof value === 'string' && value.trim());
+    const name = [meta.display_name, meta.full_name, meta.name, meta.nome].find(value => typeof value === 'string' && value.trim());
     return { id: user.id, email: user.email || '', name: name?.trim() || '' };
   }
   function selectBuffet(id) {
