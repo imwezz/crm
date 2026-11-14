@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Buffet CRM — WhatsApp Web
 // @namespace    buffet.crm
-// @version      1.1.0
+// @version      1.1.1
 // @homepageURL  https://github.com/imwezz/crm
 // @updateURL    https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
 // @downloadURL  https://raw.githubusercontent.com/imwezz/crm/main/buffet-crm.user.js
@@ -43,6 +43,8 @@
     header: '#main [data-testid="conversation-header"]',
     title: '[data-testid="conversation-info-header-chat-title"]',
     info: '[data-testid="conversation-info-header"]',
+    infoButton: 'button[data-testid="conversation-info-header-button"]',
+    avatar: '[data-testid="conversation-header-avatar"] img',
     profile: '[role="button"][aria-label="Dados do perfil"]',
     search: '#main [data-testid="conversation-header"] button[aria-label="Pesquisar"]',
     right: '[data-testid="drawer-right"]',
@@ -437,7 +439,7 @@
     const titleNode = header?.querySelector(SELECTORS.title);
     const name = titleNode?.textContent.trim();
     if (!header || !titleNode || !name) return null;
-    const avatar = header.querySelector(`${SELECTORS.profile} img`);
+    const avatar = header.querySelector(SELECTORS.avatar) || header.querySelector(`${SELECTORS.profile} img`);
     const avatarPath = avatar?.getAttribute('src')?.split('?')[0] || '';
     const group = !!header.querySelector(SELECTORS.groupPicture);
     return { header, titleNode, name, signature: `${name}\n${avatarPath}\n${group}`, group };
@@ -563,9 +565,11 @@
       // O título +DDI é suficiente para contatos não salvos; não abre informações.
       const phone = headerPhone(context);
       if (phone) { captured = true; return { phone }; }
-      // A foto abre dados do contato mesmo quando a pesquisa ocupa o painel direito.
-      const profile = context.header.querySelector(SELECTORS.profile);
-      const info = context.header.querySelector(SELECTORS.info);
+      // O cabeçalho novo tem um botão próprio dentro do contêiner de informações.
+      const infoButton = context.header.querySelector(SELECTORS.infoButton);
+      // No cabeçalho antigo, a foto também abre os dados por cima da pesquisa.
+      const profile = infoButton ? null : context.header.querySelector(SELECTORS.profile);
+      const info = infoButton || context.header.querySelector(SELECTORS.info);
       const trigger = profile || info;
       if (!trigger) throw new Error('Não encontrei o botão de dados deste contato no cabeçalho do WhatsApp.');
       trigger.click();
@@ -1695,7 +1699,7 @@
     const chatRow = event.target.closest(SELECTORS.chatRow);
     const nativeNav = event.target.closest(`${SELECTORS.navbar} button, [data-testid="navbar-footer-section"] button`);
     const nativeSection = nativeNav && nativeNav.id !== 'buffet-crm-nav';
-    const nativeInfo = event.isTrusted && state.panelMode === 'conversation' && event.target.closest(`${SELECTORS.info}, ${SELECTORS.profile}`);
+    const nativeInfo = event.isTrusted && state.panelMode === 'conversation' && event.target.closest(`${SELECTORS.infoButton}, ${SELECTORS.info}, ${SELECTORS.profile}`);
     const nativeSearch = event.isTrusted && state.panelMode === 'conversation' && event.target.closest(SELECTORS.search);
     const nativePanelTrigger = nativeInfo || nativeSearch;
     if ((chatRow || nativeSection || nativePanelTrigger) && !state.navigationApproved && (state.editor?.dirty || state.editor?.saving)) {
